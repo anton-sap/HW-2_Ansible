@@ -1,0 +1,28 @@
+---
+- name: "Enable eAPI on Arista Switches"
+  hosts: arista
+  become: yes
+  vars:
+    ansible_connection: network_cli
+  tasks:
+    - name: "Enable eAPI"
+      eos_eapi:
+        https_port: 443
+        https: yes
+        state: started
+
+    - name: "Enable eAPI under VRF"
+      eos_eapi:
+        state: started
+        vrf: "{{global.mgmt_vrf}}"
+
+    - name: "Create user for ansible"
+      eos_user:
+        name: ansible
+        privilege: 15
+        configured_password: ansible123
+        state: present
+
+    - name:
+      eos_command:
+        commands: aaa authorization exec default local

@@ -1,0 +1,53 @@
+---
+- name: "Creating and configuring L3 Interfaces"
+  hosts: arista
+#  become: yes
+#  vars:
+#    ansible_connection: network_cli
+  vars:
+    ansible_connection: httpapi
+  tasks:
+    - name: "Create Loopback 0 for OSPF"
+      arista.eos.eos_l3_interfaces:
+        config:
+          - name: Loopback 0
+            ipv4:
+              - address: "{{ global.lo_ip[inventory_hostname] }}"
+        state: merged
+
+    - name: "Set description for Loopback 0"
+      arista.eos.eos_interfaces:
+        config:
+          - name: Loopback 0
+            description: "OSPF"
+        state: merged
+
+    - name: "Create Loopback 10 for VTEP"
+      arista.eos.eos_l3_interfaces:
+        config:
+          - name: Loopback 10
+            ipv4:
+              - address: "{{ global.vtep_lo_ip[inventory_hostname] }}"
+        state: merged
+      when: "'leaf' in group_names"
+
+    - name: "Create Point-to-Point Interfaces"
+      loop: "{{ global.p2p_ip[inventory_hostname] | default([]) }}"
+      loop_control:
+        label: "{{ item.port }}"
+      arista.eos.eos_interfaces:
+        config:
+          - name: "{{ item.port}}"
+            enabled: true
+            mode: layer3
+
+    - name: "Configure IP on Point-to-Point Interfaces"
+      loop: "{{ global.p2p_ip[inventory_hostname] | default([]) }}"
+      loop_control:
+        label: "{{ item.port }}"
+      arista.eos.eos_l3_interfaces:
+        config:
+          - name: "{{ item.port}}"
+            ipv4:
+              - address: "{{ item.ip }}"
+        state: merged

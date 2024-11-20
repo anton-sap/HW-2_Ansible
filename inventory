@@ -1,0 +1,12 @@
+[spine]
+no-osl-dc1-f1-r01k01-spn01 ansible_host=172.16.108.101
+no-osl-dc1-f1-r02k01-spn01 ansible_host=172.16.108.102
+
+[leaf]
+no-osl-dc1-f1-r03k01-lf01 ansible_host=172.16.108.111
+no-osl-dc1-f1-r03k02-lf01 ansible_host=172.16.108.112
+no-osl-dc1-f1-r03k03-lf01 ansible_host=172.16.108.113
+
+[arista:children]
+spine
+leaf
